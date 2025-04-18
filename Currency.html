@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Currency Exchange Matrix</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1em;
+      background-color: white;
+      color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #ddd;
+      }
+      table {
+        border-color: #444;
+      }
+      th, td {
+        border-color: #555;
+      }
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin: auto;
+      transform: scale(0.9);
+      transform-origin: top center;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 5px;
+      vertical-align: top;
+      width: 300px;
+      height: 200px;
+    }
+
+    iframe, .tradingview-widget-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    .header-cell {
+      padding: 4px 6px;
+      height: 40px;
+      font-size: 0.9em;
+      white-space: nowrap;
+    }
+
+  </style>
+
+  <script>
+    // Refresh the page every 30 minutes
+    setTimeout(() => {
+      window.location.reload();
+    }, 30 * 60 * 1000); // 30 minutes in ms
+  </script>
+</head>
+<body>
+  <h1>Currency Exchange Rate Matrix</h1>
+  <table>
+
+    <tr>
+     <th class="header-cell"></th>
+     <th class="header-cell">TWD</th>
+     <th class="header-cell">EUR</th>
+     <th class="header-cell">USD</th>
+     <th class="header-cell">GBP</th>
+     <th class="header-cell">JPY</th>
+    </tr>
+
+
+    <!-- TWD row -->
+
+    <tr>
+      <th>TWD</th>
+      <td></td>
+      <td>
+        <div class="tradingview-widget-container">
+          <div id="tv_eurtwd"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:EURTWD",
+            "locale": "en",
+            "width": "100%",
+            "height": "100%",
+            "dateRange": "1D",
+            "colorTheme": "auto"
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <div class="tradingview-widget-container">
+          <div id="tv_usdtwd"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:USDTWD",
+            "locale": "en",
+            "width": "100%",
+            "height": "100%",
+            "dateRange": "1D",
+            "colorTheme": "auto"
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <div class="tradingview-widget-container">
+          <div id="tv_gbptwd"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:GBPTWD",
+            "locale": "en",
+            "width": "100%",
+            "height": "100%",
+            "dateRange": "1D",
+            "colorTheme": "auto"
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <div class="tradingview-widget-container">
+          <div id="tv_jpytwd"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:JPYTWD",
+            "locale": "en",
+            "width": "100%",
+            "height": "100%",
+            "dateRange": "1D",
+            "colorTheme": "auto"
+          }
+          </script>
+        </div>
+      </td>
+    </tr>
+
+    <!-- EUR row -->
+    <tr>
+      <th>EUR</th>
+      <td>
+        <!-- TWD/EUR -->
+        <div class="tradingview-widget-container">
+          <div id="tv_twdeur"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:TWDEUR",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td></td>
+      <td>
+        <!-- USD/EUR -->
+        <div class="tradingview-widget-container">
+          <div id="tv_usdeur"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:USDEUR",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <!-- GBP/EUR -->
+        <div class="tradingview-widget-container">
+          <div id="tv_gbpeur"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:GBPEUR",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <!-- JPY/EUR -->
+        <div class="tradingview-widget-container">
+          <div id="tv_jpyeur"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:JPYEUR",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+    </tr>
+
+    <!-- USD row -->
+    <tr>
+      <th>USD</th>
+      <td>
+        <!-- TWD/USD -->
+        <div class="tradingview-widget-container">
+          <div id="tv_twdusd"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:TWDUSD",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <!-- EUR/USD -->
+        <div class="tradingview-widget-container">
+          <div id="tv_eurusd"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:EURUSD",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td></td>
+      <td>
+        <!-- GBP/USD -->
+        <div class="tradingview-widget-container">
+          <div id="tv_gbpusd"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:GBPUSD",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <!-- JPY/USD -->
+        <div class="tradingview-widget-container">
+          <div id="tv_jpyusd"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:JPYUSD",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+    </tr>
+
+    <!-- GBP row -->
+    <tr>
+      <th>GBP</th>
+      <td>
+        <!-- TWD/GBP -->
+        <div class="tradingview-widget-container">
+          <div id="tv_twdgbp"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:TWDGBP",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <!-- EUR/GBP -->
+        <div class="tradingview-widget-container">
+          <div id="tv_eurgbp"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:EURGBP",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <!-- USD/GBP -->
+        <div class="tradingview-widget-container">
+          <div id="tv_usdgbp"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:USDGBP",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td></td>
+      <td>
+        <!-- JPY/GBP -->
+        <div class="tradingview-widget-container">
+          <div id="tv_jpygbp"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:JPYGBP",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+    </tr>
+
+    <!-- JPY row -->
+    <tr>
+      <th>JPY</th>
+      <td>
+        <!-- TWD/JPY -->
+        <div class="tradingview-widget-container">
+          <div id="tv_twdjpy"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:TWDJPY",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <!-- EUR/JPY -->
+        <div class="tradingview-widget-container">
+          <div id="tv_eurjpy"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:EURJPY",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <!-- USD/JPY -->
+        <div class="tradingview-widget-container">
+          <div id="tv_usdjpy"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:USDJPY",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td>
+        <!-- GBP/JPY -->
+        <div class="tradingview-widget-container">
+          <div id="tv_gbpjpy"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
+          {
+            "symbol": "FX_IDC:GBPJPY",
+            "locale": "en",
+            "width": 300,
+            "height": 200
+          }
+          </script>
+        </div>
+      </td>
+      <td></td>
+    </tr>
+
+  </table>
+</body>
+</html>
+
+
+  </table>
+</body>
+</html>
