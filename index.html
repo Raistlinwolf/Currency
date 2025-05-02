@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Currency Exchange Matrix with Time Selector</title>
+  <title>Currency Matrix</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 1em;
+      padding: 0.5em;
+      margin: 0;
       background-color: white;
       color: #000;
     }
@@ -22,42 +23,8 @@
     }
     h1 {
       text-align: center;
-    }
-    table {
-      border-collapse: collapse;
-      margin: auto;
-      transform: scale(0.9);
-      transform-origin: top center;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 4px;
-      vertical-align: top;
-      width: 280px;
-      height: 180px;
-    }
-    .header-cell {
-      padding: 2px 6px;
-      height: 28px;
-      font-size: 0.85em;
-      white-space: nowrap;
-    }
-    .diagonal {
-      background-color: #eee;
-      text-align: center;
-      font-style: italic;
-      font-size: 0.8em;
-      color: #888;
-    }
-    @media (prefers-color-scheme: dark) {
-      .diagonal {
-        background-color: #2a2a2a;
-        color: #777;
-      }
-    }
-    iframe, .tradingview-widget-container {
-      width: 100%;
-      height: 100%;
+      font-size: 1.4em;
+      margin-bottom: 0.5em;
     }
     .selector-container {
       text-align: center;
@@ -66,14 +33,55 @@
     select {
       padding: 5px;
       font-size: 1em;
+      max-width: 90%;
+    }
+    .scroll-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    table {
+      border-collapse: collapse;
+      margin: auto;
+      min-width: 600px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 2px;
+      width: 100px;
+      height: 120px;
+      font-size: 0.75em;
+      vertical-align: top;
+    }
+    .header-cell {
+      padding: 2px 4px;
+      height: 24px;
+      font-size: 0.8em;
+      white-space: nowrap;
+    }
+    .diagonal {
+      background-color: #eee;
+      text-align: center;
+      font-style: italic;
+      font-size: 0.75em;
+      color: #888;
+    }
+    @media (prefers-color-scheme: dark) {
+      .diagonal {
+        background-color: #2a2a2a;
+        color: #777;
+      }
+    }
+    .tradingview-widget-container {
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
 <body>
-  <h1>Currency Exchange Rate Matrix</h1>
+  <h1>Currency Matrix</h1>
 
   <div class="selector-container">
-    <label for="timeSelect">Select Time Range:</label>
+    <label for="timeSelect">Time Range:</label>
     <select id="timeSelect">
       <option value="1D">1 Day</option>
       <option value="5D">5 Days</option>
@@ -84,7 +92,9 @@
     </select>
   </div>
 
-  <div id="matrixContainer"></div>
+  <div class="scroll-wrapper">
+    <div id="matrixContainer"></div>
+  </div>
 
   <script>
     const currencies = ['TWD', 'EUR', 'USD', 'GBP', 'JPY'];
@@ -122,24 +132,9 @@
 
           const widgetContainer = document.createElement('div');
           widgetContainer.className = 'tradingview-widget-container';
-          const widgetId = `tv_${base}${target}`;
-          const widgetDiv = document.createElement('div');
-          widgetDiv.id = widgetId;
-          widgetContainer.appendChild(widgetDiv);
+          widgetContainer.dataset.symbol = `FX_IDC:${base}${target}`;
+          widgetContainer.dataset.range = timeRange;
 
-          const script = document.createElement('script');
-          script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
-          script.async = true;
-          script.innerHTML = JSON.stringify({
-            symbol: `FX_IDC:${base}${target}`,
-            locale: "en",
-            width: "100%",
-            height: "100%",
-            dateRange: timeRange,
-            colorTheme: "auto"
-          });
-
-          widgetContainer.appendChild(script);
           td.appendChild(widgetContainer);
           row.appendChild(td);
         });
@@ -150,10 +145,51 @@
       return table;
     }
 
+    function lazyLoadWidgets() {
+      const options = {
+        rootMargin: '100px',
+        threshold: 0.1
+      };
+
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const container = entry.target;
+            const symbol = container.dataset.symbol;
+            const dateRange = container.dataset.range;
+
+            const widgetDiv = document.createElement('div');
+            widgetDiv.id = `tv_${symbol.replace(':', '')}`;
+            container.appendChild(widgetDiv);
+
+            const script = document.createElement('script');
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
+            script.async = true;
+            script.innerHTML = JSON.stringify({
+              symbol,
+              locale: "en",
+              width: "100%",
+              height: "100%",
+              dateRange,
+              colorTheme: "auto"
+            });
+
+            container.appendChild(script);
+            obs.unobserve(container);
+          }
+        });
+      }, options);
+
+      document.querySelectorAll('.tradingview-widget-container').forEach(el => {
+        observer.observe(el);
+      });
+    }
+
     function updateMatrix() {
       const timeRange = timeSelect.value;
       container.innerHTML = '';
       container.appendChild(createMatrix(timeRange));
+      requestAnimationFrame(lazyLoadWidgets);
     }
 
     timeSelect.addEventListener('change', updateMatrix);
