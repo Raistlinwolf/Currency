@@ -2,16 +2,81 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Currency Matrix</title>
+  <title>Currency Exchange Matrix</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 0.5em;
       margin: 0;
+      padding: 1em;
       background-color: white;
       color: #000;
     }
+
+    h1 {
+      text-align: center;
+    }
+
+    .selector-container {
+      text-align: center;
+      margin-bottom: 1em;
+    }
+
+    select {
+      padding: 6px;
+      font-size: 1em;
+    }
+
+    #matrixWrapper {
+      overflow: auto;
+      max-width: 100vw;
+      max-height: 85vh;
+      border: 1px solid #ccc;
+    }
+
+    table {
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      width: 220px;
+      height: 180px;
+      padding: 4px;
+      text-align: center;
+    }
+
+    th.header-cell {
+      background: #f4f4f4;
+      position: sticky;
+      z-index: 2;
+    }
+
+    tr:first-child th {
+      top: 0;
+      z-index: 3;
+    }
+
+    th:first-child {
+      left: 0;
+      z-index: 3;
+    }
+
+    td:first-child {
+      position: sticky;
+      left: 0;
+      background: #f9f9f9;
+      z-index: 1;
+    }
+
+    .diagonal {
+      background-color: #eee;
+      font-style: italic;
+      font-size: 0.8em;
+      color: #888;
+    }
+
     @media (prefers-color-scheme: dark) {
       body {
         background-color: #121212;
@@ -20,68 +85,37 @@
       th, td {
         border-color: #555;
       }
-    }
-    h1 {
-      text-align: center;
-      font-size: 1.4em;
-      margin-bottom: 0.5em;
-    }
-    .selector-container {
-      text-align: center;
-      margin-bottom: 1em;
-    }
-    select {
-      padding: 5px;
-      font-size: 1em;
-      max-width: 90%;
-    }
-    .scroll-wrapper {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    table {
-      border-collapse: collapse;
-      margin: auto;
-      min-width: 600px;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 2px;
-      width: 100px;
-      height: 120px;
-      font-size: 0.75em;
-      vertical-align: top;
-    }
-    .header-cell {
-      padding: 2px 4px;
-      height: 24px;
-      font-size: 0.8em;
-      white-space: nowrap;
-    }
-    .diagonal {
-      background-color: #eee;
-      text-align: center;
-      font-style: italic;
-      font-size: 0.75em;
-      color: #888;
-    }
-    @media (prefers-color-scheme: dark) {
+      th.header-cell {
+        background: #222;
+      }
+      td:first-child {
+        background: #1e1e1e;
+      }
       .diagonal {
         background-color: #2a2a2a;
         color: #777;
       }
     }
-    .tradingview-widget-container {
+
+    iframe, .tradingview-widget-container {
       width: 100%;
       height: 100%;
+    }
+
+    @media screen and (max-width: 768px) {
+      th, td {
+        width: 160px;
+        height: 160px;
+        font-size: 0.9em;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Currency Matrix</h1>
+  <h1>Currency Exchange Rate Matrix</h1>
 
   <div class="selector-container">
-    <label for="timeSelect">Time Range:</label>
+    <label for="timeSelect">Select Time Range:</label>
     <select id="timeSelect">
       <option value="1D">1 Day</option>
       <option value="5D">5 Days</option>
@@ -92,7 +126,7 @@
     </select>
   </div>
 
-  <div class="scroll-wrapper">
+  <div id="matrixWrapper">
     <div id="matrixContainer"></div>
   </div>
 
@@ -104,7 +138,10 @@
     function createMatrix(timeRange) {
       const table = document.createElement('table');
       const headerRow = document.createElement('tr');
-      headerRow.appendChild(document.createElement('th'));
+      const emptyCorner = document.createElement('th');
+      emptyCorner.className = 'header-cell';
+      headerRow.appendChild(emptyCorner);
+
       currencies.forEach(curr => {
         const th = document.createElement('th');
         th.className = 'header-cell';
@@ -122,7 +159,6 @@
 
         currencies.forEach(target => {
           const td = document.createElement('td');
-
           if (base === target) {
             td.className = 'diagonal';
             td.textContent = '—';
@@ -132,9 +168,24 @@
 
           const widgetContainer = document.createElement('div');
           widgetContainer.className = 'tradingview-widget-container';
-          widgetContainer.dataset.symbol = `FX_IDC:${base}${target}`;
-          widgetContainer.dataset.range = timeRange;
+          const widgetId = `tv_${base}${target}`;
+          const widgetDiv = document.createElement('div');
+          widgetDiv.id = widgetId;
+          widgetContainer.appendChild(widgetDiv);
 
+          const script = document.createElement('script');
+          script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
+          script.async = true;
+          script.innerHTML = JSON.stringify({
+            symbol: `FX_IDC:${base}${target}`,
+            locale: "en",
+            width: "100%",
+            height: "100%",
+            dateRange: timeRange,
+            colorTheme: "auto"
+          });
+
+          widgetContainer.appendChild(script);
           td.appendChild(widgetContainer);
           row.appendChild(td);
         });
@@ -145,51 +196,10 @@
       return table;
     }
 
-    function lazyLoadWidgets() {
-      const options = {
-        rootMargin: '100px',
-        threshold: 0.1
-      };
-
-      const observer = new IntersectionObserver((entries, obs) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const container = entry.target;
-            const symbol = container.dataset.symbol;
-            const dateRange = container.dataset.range;
-
-            const widgetDiv = document.createElement('div');
-            widgetDiv.id = `tv_${symbol.replace(':', '')}`;
-            container.appendChild(widgetDiv);
-
-            const script = document.createElement('script');
-            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
-            script.async = true;
-            script.innerHTML = JSON.stringify({
-              symbol,
-              locale: "en",
-              width: "100%",
-              height: "100%",
-              dateRange,
-              colorTheme: "auto"
-            });
-
-            container.appendChild(script);
-            obs.unobserve(container);
-          }
-        });
-      }, options);
-
-      document.querySelectorAll('.tradingview-widget-container').forEach(el => {
-        observer.observe(el);
-      });
-    }
-
     function updateMatrix() {
       const timeRange = timeSelect.value;
       container.innerHTML = '';
       container.appendChild(createMatrix(timeRange));
-      requestAnimationFrame(lazyLoadWidgets);
     }
 
     timeSelect.addEventListener('change', updateMatrix);
